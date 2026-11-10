@@ -136,9 +136,14 @@ export async function startServer({publicDir = DEFAULT_DIST, port = 5190, host =
 async function main() {
   const port = process.env.PORT === undefined ? 5190 : Number(process.env.PORT);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT must be an integer from 1 to 65535.');
-  const server = await startServer({port, host:process.env.HOST || '0.0.0.0'});
-  // No request URLs, environment values, or filesystem paths are written to logs.
-  console.log('Campus experience is ready.');
+  const host = process.env.HOST || '0.0.0.0';
+  const server = await startServer({port, host});
+  // Use a browser-usable loopback address when listening on all interfaces.
+  const browserHost = host === '0.0.0.0' || host === '::' ? '127.0.0.1' : host;
+  const displayHost = browserHost.includes(':') && !browserHost.startsWith('[') ? `[${browserHost}]` : browserHost;
+  console.log('Campus experience is ready. Open:');
+  console.log(`Day tour:     http://${displayHost}:${port}/`);
+  console.log(`Haunted night: http://${displayHost}:${port}/night/`);
   let stopping = false;
   const stop = () => {
     if (stopping) return;
